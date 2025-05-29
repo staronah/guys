@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Savings Tracker</title>
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Savings Tracker">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkdyb3VwIFNhdmluZ3MgVHJhY2tlciIsCiAgInNob3J0X25hbWUiOiAiU2F2aW5ncyIsCiAgInN0YXJ0X3VybCI6ICIvIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjNjY3ZWVhIiwKICAidGhlbWVfY29sb3IiOiAiIzY2N2VlYSIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImRhdGE6aW1hZ2Uvc3ZnK3htbDtiYXNlNjQsUEhOMlp5QjNhV1IwYUQwaU1UazJJaUJvWldsbmFIUTlJakU1TmlJZ2RtbGxkMEp2ZUQwaU1DQXdJREU1TmlBeE9UWWlJR1pwYkd3OUlpTTJOamRsWldFaVBqeHlaV04wSUhkcFpIUm9QU0l4T1RZaUlHaGxhV2RvZEQwaU1UazJJaUJtYVd4c1BTSWpOalk3WldWaElpOCtQQzl6ZG1jKyIsCiAgICAgICJzaXplcyI6ICIxOTJ4MTkyIiwKICAgICAgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCIKICAgIH0KICBdCn0=">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            touch-action: manipulation;
+        }
+
+        .app-container {
+            max-width: 100vw;
+            min-height: 100vh;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .app-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: env(safe-area-inset-top, 20px) 20px 20px 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .app-title {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: linear-gradient(to right, #fff, rgba(255,255,255,0.7));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .app-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .countdown-container {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .countdown-label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .countdown-timer {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .countdown-item {
+            text-align: center;
+            min-width: 45px;
+        }
+
+        .countdown-number {
+            font-size: 1.4rem;
+            font-weight: bold;
+            line-height: 1;
+            margin-bottom: 2px;
+        }
+
+        .countdown-unit {
+            font-size: 0.7rem;
+            opacity: 0.8;
+            text-transform: uppercase;
+        }
+
+        .countdown-separator {
+            font-size: 1.2rem;
+            font-weight: bold;
+            opacity: 0.6;
+            align-self: center;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            padding-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        .goal-summary {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .goal-amount {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .target-text {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-bottom: 5px;
+        }
+
+        .target-amount {
+            font-size: 2.2rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .progress-container {
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            background: #f3f4f6;
+            border-radius: 12px;
+            height: 12px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            height: 100%;
+            border-radius: 12px;
+            transition: width 0.5s ease;
+            width: 35%;
+        }
+
+        .progress-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #059669;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .members-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .member-card {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid #f3f4f6;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .member-card:active {
+            transform: scale(0.98);
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .member-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .member-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .member-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .member-details h4 {
+            font-size: 1rem;
+            color: #374151;
+            margin-bottom: 2px;
+        }
+
+        .member-amount {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #059669;
+        }
+
+        .member-progress {
+            background: #f3f4f6;
+            border-radius: 8px;
+            height: 6px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .member-progress-fill {
+            background: linear-gradient(90deg, #10b981, #059669);
+            height: 100%;
+            border-radius: 8px;
+            transition: width 0.3s ease;
+        }
+
+        .add-money-section {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .amount-input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            background: #f9fafb;
+        }
+
+        .amount-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+            min-width: 60px;
+            transition: transform 0.2s ease;
+        }
+
+        .add-btn:active {
+            transform: scale(0.95);
+        }
+
+        .fab {
+            position: fixed;
+            bottom: env(safe-area-inset-bottom, 20px);
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            z-index: 50;
+            transition: transform 0.2s ease;
+        }
+
+        .fab:active {
+            transform: scale(0.9);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #374151;
+        }
+
+        .quick-amounts {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .quick-amount {
+            background: #f3f4f6;
+            border: 2px solid transparent;
+            padding: 15px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .quick-amount.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .modal-btn.cancel {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .modal-btn.confirm {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .toast {
+            position: fixed;
+            top: 80px;
+            left: 20px;
+            right: 20px;
+            background: #059669;
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            transform: translateY(-100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 2000;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Sticky summary styles */
+        .sticky-summary {
+            position: sticky;
+            top: 0;
+            z-index: 101;
+            background: rgba(255,255,255,0.97);
+            backdrop-filter: blur(10px);
+            padding-bottom: 8px;
+        }
+
+        /* Optional: add a subtle shadow for separation */
+        .sticky-summary {
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 15px;
+            }
+            
+            .target-amount {
+                font-size: 1.8rem;
+            }
+            
+            .quick-amounts {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (display-mode: standalone) {
+            .app-header {
+                padding-top: max(env(safe-area-inset-top), 40px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="app-header">
+            <div class="app-title">W•A•L•L•E•T</div>
+        </div>
+
+        <div class="sticky-summary">
+            <div class="countdown-container">
+                <div class="countdown-label">Time Remaining</div>
+                <div class="countdown-timer" id="countdownTimer">
+                    <div class="countdown-item">
+                        <div class="countdown-number" id="months">5</div>
+                        <div class="countdown-unit">Months</div>
+                    </div>
+                    <div class="countdown-separator">:</div>
+                    <div class="countdown-item">
+                        <div class="countdown-number" id="days">28</div>
+                        <div class="countdown-unit">Days</div>
+                    </div>
+                    <div class="countdown-separator">:</div>
+                    <div class="countdown-item">
+                        <div class="countdown-number" id="hours">14</div>
+                        <div class="countdown-unit">Hours</div>
+                    </div>
+                    <div class="countdown-separator">:</div>
+                    <div class="countdown-item">
+                        <div class="countdown-number" id="minutes">32</div>
+                        <div class="countdown-unit">Min</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="goal-summary">
+                <div class="goal-amount">
+                    <div class="target-text">Target Goal</div>
+                    <div class="target-amount">₦1,000,000</div>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="mainProgress"></div>
+                    </div>
+                    <div class="progress-stats">
+                        <span id="savedAmount">₦350,000 saved</span>
+                        <span id="progressPercent">35%</span>
+                    </div>
+                </div>
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-value" id="avgStat">₦38,889</div>
+                        <div class="stat-label">Average</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="remainingStat">₦650,000</div>
+                        <div class="stat-label">Remaining</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="section-title">
+                as the spirt leads
+            </div>
+            <div class="members-list" id="membersList">
+                <!-- Members populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Quick Add Modal -->
+        <div class="modal" id="quickAddModal">
+            <div class="modal-content">
+                <div class="modal-title">Quick Add Money</div>
+                <div class="quick-amounts" id="quickAmounts">
+                    <button class="quick-amount" data-amount="1000">₦1,000</button>
+                    <button class="quick-amount" data-amount="5000">₦5,000</button>
+                    <button class="quick-amount" data-amount="10000">₦10,000</button>
+                    <button class="quick-amount" data-amount="20000">₦20,000</button>
+                    <button class="quick-amount" data-amount="50000">₦50,000</button>
+                    <button class="quick-amount" data-amount="100000">₦100,000</button>
+                </div>
+                <input type="number" class="modal-input" id="customAmount" placeholder="Or enter custom amount">
+                <div class="modal-buttons">
+                    <button class="modal-btn cancel" onclick="closeQuickAdd()">Cancel</button>
+                    <button class="modal-btn confirm" onclick="addQuickMoney()">Add to You</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Notification -->
+        <div class="toast" id="toast"></div>
+
+        <script>
+            let members = [];
+            let targetAmount = 0;
+            let selectedQuickAmount = 0;
+            let targetDate = new Date();
+
+            // Fetch latest cardid and card data from Firebase
+            async function fetchLatestCardData() {
+                // 1. Get all cardids
+                const cardsRes = await fetch('https://commander-df884-default-rtdb.firebaseio.com/cards.json');
+                const cardsData = await cardsRes.json();
+                if (!cardsData) return null;
+                // 2. Get latest cardid (assume highest key or latest by timestamp if available)
+                const cardids = Object.keys(cardsData);
+                // If cardids are numeric, sort numerically, else lexically
+                cardids.sort((a, b) => {
+                    // Try numeric sort, fallback to string
+                    return (parseInt(b) || 0) - (parseInt(a) || 0) || b.localeCompare(a);
+                });
+                const latestCardId = cardids[0];
+                // 3. Fetch latest card data
+                const cardRes = await fetch(`https://commander-df884-default-rtdb.firebaseio.com/cards/${latestCardId}.json`);
+                const card = await cardRes.json();
+                return card;
+            }
+
+            function getKeyInsensitive(obj, ...keys) {
+                // Returns the value for the first matching key (case-insensitive)
+                for (const key of keys) {
+                    const found = Object.keys(obj).find(k => k.toLowerCase() === key.toLowerCase());
+                    if (found) return obj[found];
+                }
+                return undefined;
+            }
+
+            function parseTargetDate(dateStr) {
+                // dateStr: "mm/yyyy"
+                if (!dateStr) return null;
+                const [mm, yyyy] = dateStr.split('/');
+                // Set to last day of the month, 23:59:59
+                return new Date(parseInt(yyyy), parseInt(mm), 0, 23, 59, 59);
+            }
+
+            function updateCountdown() {
+                const now = new Date();
+                const timeLeft = targetDate - now;
+                if (timeLeft > 0) {
+                    const months = Math.floor(timeLeft / (1000 * 60 * 60 * 24 * 30));
+                    const days = Math.floor((timeLeft % (1000 * 60 * 60 * 24 * 30)) / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                    document.getElementById('months').textContent = months;
+                    document.getElementById('days').textContent = days;
+                    document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+                    document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+                } else {
+                    document.getElementById('countdownTimer').innerHTML = '<div style="color: #fbbf24; font-weight: bold;">⏰ Goal Deadline Reached!</div>';
+                }
+            }
+
+            function formatMoney(amount) {
+                return new Intl.NumberFormat('en-NG', {
+                    style: 'currency',
+                    currency: 'NGN',
+                    minimumFractionDigits: 0
+                }).format(amount);
+            }
+
+            function updateMainStats(averageAmountFromCard) {
+                const totalSaved = members.reduce((sum, member) => sum + member.amount, 0);
+                const remaining = targetAmount - totalSaved;
+                const progressPercent = Math.round((totalSaved / targetAmount) * 100);
+                // Use averageAmountFromCard if provided, else calculate
+                const avgContribution = averageAmountFromCard !== undefined && averageAmountFromCard !== null
+                    ? averageAmountFromCard
+                    : Math.round(totalSaved / members.length);
+                document.getElementById('mainProgress').style.width = progressPercent + '%';
+                document.getElementById('savedAmount').textContent = formatMoney(totalSaved) + ' saved';
+                document.getElementById('progressPercent').textContent = progressPercent + '%';
+                document.getElementById('avgStat').textContent = formatMoney(avgContribution);
+                document.getElementById('remainingStat').textContent = formatMoney(remaining);
+            }
+
+            function renderMembers() {
+                const list = document.getElementById('membersList');
+                list.innerHTML = '';
+                members.forEach((member, index) => {
+                    const progressPercent = Math.round((member.amount / member.target) * 100);
+                    const initial = member.name.charAt(0).toUpperCase();
+                    const memberCard = document.createElement('div');
+                    memberCard.className = 'member-card';
+                    memberCard.innerHTML = `
+                        <div class="member-header">
+                            <div class="member-info">
+                                <div class="member-avatar">${initial}</div>
+                                <div class="member-details">
+                                    <h4>${member.name}</h4>
+                                    <div class="member-amount">${formatMoney(member.amount)}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="member-progress">
+                            <div class="member-progress-fill" style="width: ${progressPercent}%"></div>
+                        </div>
+                    `;
+                    list.appendChild(memberCard);
+                });
+            }
+
+            function addMoney(memberIndex) {
+                const input = document.getElementById(`input-${memberIndex}`);   
+                const amount = parseFloat(input.value);
+                if (amount && amount > 0) {
+                    members[memberIndex].amount += amount;
+                    input.value = '';
+                    renderMembers();
+                    updateMainStats();
+                    showToast(`Added ${formatMoney(amount)} to ${members[memberIndex].name}!`);
+                }
+            }
+
+            function openQuickAdd() {
+                document.getElementById('quickAddModal').classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeQuickAdd() {
+                document.getElementById('quickAddModal').classList.remove('active');
+                document.body.style.overflow = '';
+                document.getElementById('customAmount').value = '';
+                selectedQuickAmount = 0;
+                document.querySelectorAll('.quick-amount').forEach(btn => btn.classList.remove('selected'));
+            }
+
+            function addQuickMoney() {
+                const customAmount = parseFloat(document.getElementById('customAmount').value);
+                const amount = customAmount || selectedQuickAmount;
+                // Add to "You"
+                if (amount > 0) {
+                    members[0].amount += amount;
+                    renderMembers();
+                    updateMainStats();
+                    showToast(`Added ${formatMoney(amount)} to your savings!`);
+                    closeQuickAdd();
+                }
+            }
+
+            function showToast(message) {
+                const toast = document.getElementById('toast');
+                toast.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+
+            // Fetch user names and their total log amounts from users subfolder under the latest card
+            async function fetchUserNamesAndSums(latestCardId) {
+                const usersRes = await fetch(`https://commander-df884-default-rtdb.firebaseio.com/cards/${latestCardId}/users.json`);
+                const usersData = await usersRes.json();
+                if (!usersData) return [];
+                // For each UID, get name and sum of all logs/amount
+                const userEntries = Object.entries(usersData);
+                const results = await Promise.all(userEntries.map(async ([uid, userObj]) => {
+                    let name = userObj && userObj.name ? userObj.name : uid;
+                    let sum = 0;
+                    if (userObj && userObj.logs) {
+                        // logs is an object with subkeys, each containing an 'amount'
+                        Object.values(userObj.logs).forEach(log => {
+                            if (log && typeof log.amount === 'number') sum += log.amount;
+                            // If amount is string, try parse
+                            else if (log && log.amount) sum += parseFloat(log.amount) || 0;
+                        });
+                    }
+                    return { name, sum };
+                }));
+                return results;
+            }
+
+            document.addEventListener('DOMContentLoaded', async function() {
+                // Fetch data from Firebase
+                const cardsRes = await fetch('https://commander-df884-default-rtdb.firebaseio.com/cards.json');
+                const cardsData = await cardsRes.json();
+                let latestCardId = null;
+                if (cardsData) {
+                    const cardids = Object.keys(cardsData);
+                    cardids.sort((a, b) => (parseInt(b) || 0) - (parseInt(a) || 0) || b.localeCompare(a));
+                    latestCardId = cardids[0];
+                }
+                let card = null;
+                let averageAmount = null;
+                if (latestCardId) {
+                    const cardRes = await fetch(`https://commander-df884-default-rtdb.firebaseio.com/cards/${latestCardId}.json`);
+                    card = await cardRes.json();
+                }
+                if (card) {
+                    members = card.members || [];
+                    targetAmount = getKeyInsensitive(card, 'targetamount', 'targetAmount') || 1000000;
+                    averageAmount = getKeyInsensitive(card, 'averageamount', 'averageAmount');
+                    document.querySelector('.target-amount').textContent = formatMoney(targetAmount);
+                    if (card.date) {
+                        const d = parseTargetDate(card.date);
+                        if (d) targetDate = d;
+                    }
+                } else {
+                    members = [
+                        { name: "You", amount: 45000, target: 111111 },
+                        { name: "Alex", amount: 40000, target: 111111 },
+                        { name: "Sarah", amount: 35000, target: 111111 },
+                        { name: "Emma", amount: 38000, target: 111111 },
+                        { name: "Mike", amount: 42000, target: 111111 },
+                        { name: "John", amount: 41000, target: 111111 },
+                        { name: "Lisa", amount: 39000, target: 111111 },
+                        { name: "David", amount: 36000, target: 111111 },
+                        { name: "Maria", amount: 34000, target: 111111 }
+                    ];
+                    targetAmount = 1000000;
+                    document.querySelector('.target-amount').textContent = formatMoney(targetAmount);
+                }
+
+                renderMembers();
+                updateMainStats(averageAmount);
+                updateCountdown();
+                setInterval(updateCountdown, 60000);
+
+                // --- Display user names and their log sums from users subfolder ---
+                if (latestCardId) {
+                    const userInfos = await fetchUserNamesAndSums(latestCardId);
+                    if (userInfos.length > 0) {
+                        // Sort by sum descending
+                        userInfos.sort((a, b) => b.sum - a.sum);
+
+                        // Get average value for bar max
+                        let avgValue = averageAmount || 0;
+                        if (!avgValue) {
+                            avgValue = Math.round(userInfos.reduce((a, b) => a + b.sum, 0) / userInfos.length) || 1;
+                        }
+                        // Fun colors for bars
+                        const funColors = [
+                            'linear-gradient(90deg,#f7971e,#ffd200)',
+                            'linear-gradient(90deg,#21d4fd,#b721ff)',
+                            'linear-gradient(90deg,#43e97b,#38f9d7)',
+                            'linear-gradient(90deg,#fa709a,#fee140)',
+                            'linear-gradient(90deg,#30cfd0,#330867)',
+                            'linear-gradient(90deg,#f857a6,#ff5858)',
+                            'linear-gradient(90deg,#a8ff78,#78ffd6)',
+                            'linear-gradient(90deg,#fceabb,#f8b500)',
+                            'linear-gradient(90deg,#e0c3fc,#8ec5fc)'
+                        ];
+                        const progressEmojis = ['🚀','🔥','💰','🌟','🎯','🏆','🎉','💎','🦄','⚡','🍀','🥇','🥳','🤑'];
+                        const badges = [
+                            '<span style="font-size:1.2em;margin-left:4px;" title="1st Place">🥇 1st</span>',
+                            '<span style="font-size:1.1em;margin-left:4px;" title="2nd Place">🥈 2nd</span>',
+                            '<span style="font-size:1.1em;margin-left:4px;" title="3rd Place">🥉 3rd</span>'
+                        ];
+
+                        let userListDiv = document.getElementById('userList');
+                        if (!userListDiv) {
+                            userListDiv = document.createElement('div');
+                            userListDiv.id = 'userList';
+                            userListDiv.style.margin = '20px 0';
+                            document.querySelector('.main-content').prepend(userListDiv);
+                        }
+                        // Add animation CSS (only once)
+                        if (!document.getElementById('user-bar-anim-style')) {
+                            const style = document.createElement('style');
+                            style.id = 'user-bar-anim-style';
+                            style.textContent = `
+                            .user-fun-bar {
+                                transform-origin: left;
+                                width: var(--bar-width, 0%) !important;
+                                animation: user-fun-bar-anim 1s ease-out forwards;
+                            }
+                            @keyframes user-fun-bar-anim {
+                                0% { transform: scaleX(0); }
+                                100% { transform: scaleX(1); }
+                            }
+                            .user-fun-bar-container {
+                                background: #f3f4f6;
+                                border-radius: 10px;
+                                height: 18px;
+                                overflow: hidden;
+                                position: relative;
+                                box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+                            }
+                            `;
+                            document.head.appendChild(style);
+                        }
+                        userListDiv.innerHTML = `
+                            <div style="font-weight:700;margin-bottom:12px;font-size:1.1rem;letter-spacing:1px;display:flex;align-items:center;gap:8px;">
+                                🕹️ Commanders ranks
+                            </div>
+                            <div style="display:flex;flex-direction:column;gap:16px;">
+                                ${userInfos.map((u, idx) => {
+                                    const percent = Math.min(100, Math.round((u.sum / avgValue) * 100));
+                                    const color = funColors[idx % funColors.length];
+                                    const emoji = progressEmojis[(percent >= 100 ? 0 : Math.floor(percent / 10)) % progressEmojis.length];
+                                    let trophy = percent >= 100 ? '🏅' : '';
+                                    let badge = badges[idx] || '';
+                                    return `
+                                        <div style="background:#fff;border-radius:16px;padding:16px 18px;box-shadow:0 2px 10px rgba(0,0,0,0.06);position:relative;">
+                                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                                                <span style="font-weight:600;color:#374151;display:flex;align-items:center;gap:6px;">
+                                                    <span style="font-size:1.2em;">${emoji}</span> ${u.name} ${trophy} ${badge}
+                                                </span>
+                                                <span style="font-weight:bold;color:#059669;">${formatMoney(u.sum)}</span>
+                                            </div>
+                                            <div class="user-fun-bar-container">
+                                                <div class="user-fun-bar" style="
+                                                    background:${color};
+                                                    height:100%;
+                                                    border-radius:10px;
+                                                    transition:transform 0.4s;
+                                                    display:flex;
+                                                    align-items:center;
+                                                    justify-content:${percent>90?'flex-end':'flex-start'};
+                                                    position:relative;
+                                                    --bar-width:${percent}%;
+                                                    opacity: 0.9;
+                                                ">
+                                                    <span style="position:absolute;right:6px;top:2px;font-size:1.1em;">
+                                                        ${percent >= 100 ? '🏆' : ''}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div style="font-size:0.8rem;color:#6b7280;margin-top:4px;display:flex;align-items:center;gap:6px;">
+                                                <span>${percent}% of average (${formatMoney(avgValue)})</span>
+                                                ${percent >= 100 ? '<span style="color:#f59e42;font-weight:700;">Maxed!</span>' : ''}
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        `;
+                        // Trigger animation by forcing reflow and removing/re-adding the class
+                        setTimeout(() => {
+                            userListDiv.querySelectorAll('.user-fun-bar').forEach((bar, idx) => {
+                                bar.classList.remove('user-fun-bar');
+                                // force reflow
+                                void bar.offsetWidth;
+                                bar.classList.add('user-fun-bar');
+                            });
+                        }, 50);
+                    }
+                }
+
+                // Quick amount buttons
+                document.querySelectorAll('.quick-amount').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const amount = parseFloat(this.getAttribute('data-amount'));
+                        selectedQuickAmount = selectedQuickAmount === amount ? 0 : amount;
+                        document.getElementById('customAmount').value = '';
+                        document.querySelectorAll('.quick-amount').forEach(b => b.classList.remove('selected'));
+                        if (selectedQuickAmount > 0) {
+                            this.classList.add('selected');
+                        }
+                    });
+                });
+            });
+
+            // Update countdown every minute
+            setInterval(updateCountdown, 60000);
+        </script>
+    </div>
+</body>
+</html>
