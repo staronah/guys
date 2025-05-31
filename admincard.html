@@ -437,7 +437,7 @@
                             <label for="averageamount" class="form-label fw-bold">
                                 <i class="fas fa-chart-line me-1"></i>Average Amount
                             </label>
-                            <input type="number" class="form-control" id="averageamount" placeholder="Enter average amount">
+                            <input type="number" class="form-control" id="averageamount" placeholder="Enter average amount" step="0.01">
                         </div>
                     </div>
                     <button type="submit" class="btn btn-primary">
@@ -611,7 +611,7 @@
             const targetamount = targetAmountInput.value.trim();
             if (targetamount && !isNaN(targetamount) && userCount > 0) {
                 const avg = (Number(targetamount) / userCount).toFixed(2);
-                averageAmountInput.value = avg;
+                averageAmountInput.value = Number(avg);
                 // Auto-submit average amount to database
                 database.ref('cards/' + cardId).update({
                     averageamount: Number(avg)
