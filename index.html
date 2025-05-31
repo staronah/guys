@@ -494,6 +494,20 @@
                 padding-top: max(env(safe-area-inset-top), 40px);
             }
         }
+
+        /* Commander card animations */
+        @keyframes float-first {
+            0%, 100% { transform: translateY(0) scale(1.02); }
+            50% { transform: translateY(-10px) scale(1.02); }
+        }
+        @keyframes float-second {
+            0%, 100% { transform: translateY(0) scale(1.01); }
+            50% { transform: translateY(-7px) scale(1.01); }
+        }
+        @keyframes float-third {
+            0%, 100% { transform: translateY(0) scale(1.005); }
+            50% { transform: translateY(-5px) scale(1.005); }
+        }
     </style>
 </head>
 <body>
@@ -501,7 +515,6 @@
         <div class="app-header">
             <div class="app-title">W•A•L•L•E•T</div>
         </div>
-
         <div class="sticky-summary">
             <div class="countdown-container">
                 <div class="countdown-label">Time Remaining</div>
@@ -556,9 +569,6 @@
         </div>
 
         <div class="main-content">
-            <div class="section-title">
-                as the spirt leads
-            </div>
             <div class="members-list" id="membersList">
                 <!-- Members populated by JavaScript -->
             </div>
@@ -655,14 +665,25 @@
                 }).format(amount);
             }
 
-            function updateMainStats(averageAmountFromCard) {
-                const totalSaved = members.reduce((sum, member) => sum + member.amount, 0);
+            function updateMainStats(averageAmountFromCard, userInfos) {
+                let totalSaved = 0;
+                
+                // If we have userInfos from Firebase, use those sums
+                if (userInfos && userInfos.length > 0) {
+                    totalSaved = userInfos.reduce((sum, user) => sum + user.sum, 0);
+                } else {
+                    // Fallback to members array if no Firebase data
+                    totalSaved = members.reduce((sum, member) => sum + member.amount, 0);
+                }
+                
                 const remaining = targetAmount - totalSaved;
                 const progressPercent = Math.round((totalSaved / targetAmount) * 100);
+                
                 // Use averageAmountFromCard if provided, else calculate
                 const avgContribution = averageAmountFromCard !== undefined && averageAmountFromCard !== null
                     ? averageAmountFromCard
-                    : Math.round(totalSaved / members.length);
+                    : Math.round(totalSaved / (userInfos?.length || members.length));
+                
                 document.getElementById('mainProgress').style.width = progressPercent + '%';
                 document.getElementById('savedAmount').textContent = formatMoney(totalSaved) + ' saved';
                 document.getElementById('progressPercent').textContent = progressPercent + '%';
@@ -816,6 +837,9 @@
                 if (latestCardId) {
                     const userInfos = await fetchUserNamesAndSums(latestCardId);
                     if (userInfos.length > 0) {
+                        // Update stats with Firebase data
+                        updateMainStats(averageAmount, userInfos);
+                        
                         // Sort by sum descending
                         userInfos.sort((a, b) => b.sum - a.sum);
 
@@ -838,10 +862,18 @@
                         ];
                         const progressEmojis = ['🚀','🔥','💰','🌟','🎯','🏆','🎉','💎','🦄','⚡','🍀','🥇','🥳','🤑'];
                         const badges = [
-                            '<span style="font-size:1.2em;margin-left:4px;" title="1st Place">🥇 1st</span>',
-                            '<span style="font-size:1.1em;margin-left:4px;" title="2nd Place">🥈 2nd</span>',
-                            '<span style="font-size:1.1em;margin-left:4px;" title="3rd Place">🥉 3rd</span>'
+                            '<span style="font-size:1.2em;margin-left:4px;" title="1st Place">😎🔥</span>',
+                            '<span style="font-size:1.1em;margin-left:4px;" title="2nd Place">😤💯</span>',
+                            '<span style="font-size:1.1em;margin-left:4px;" title="3rd Place">😌</span>'
                         ];
+
+                        function getPositionBadge(idx, total) {
+                            if (idx === 0) return badges[0];
+                            if (idx === 1) return badges[1];
+                            if (idx === 2) return badges[2];
+                            if (idx === total - 1) return '<span style="font-size:1.1em;margin-left:4px;" title="Keep Up!">🤒🤧</span>';
+                            return '';
+                        }
 
                         let userListDiv = document.getElementById('userList');
                         if (!userListDiv) {
@@ -872,12 +904,40 @@
                                 position: relative;
                                 box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
                             }
+                            .commander-card {
+                                transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+                                cursor: pointer;
+                            }
+                            .commander-card[data-rank="1"] {
+                                animation: float-first 3s ease-in-out infinite;
+                                transform-origin: center;
+                            }
+                            .commander-card[data-rank="2"] {
+                                animation: float-second 3s ease-in-out infinite;
+                                animation-delay: 0.2s;
+                            }
+                            .commander-card[data-rank="3"] {
+                                animation: float-third 3s ease-in-out infinite;
+                                animation-delay: 0.4s;
+                            }
+                            .commander-card[data-rank="1"]:hover {
+                                transform: scale(1.08);
+                                box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+                            }
+                            .commander-card[data-rank="2"]:hover {
+                                transform: scale(1.05);
+                                box-shadow: 0 12px 25px rgba(0,0,0,0.12);
+                            }
+                            .commander-card[data-rank="3"]:hover {
+                                transform: scale(1.03);
+                                box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+                            }
                             `;
                             document.head.appendChild(style);
                         }
                         userListDiv.innerHTML = `
                             <div style="font-weight:700;margin-bottom:12px;font-size:1.1rem;letter-spacing:1px;display:flex;align-items:center;gap:8px;">
-                                🕹️ Commanders ranks
+                                🕹️ Commanders ranks • as the spirit leads
                             </div>
                             <div style="display:flex;flex-direction:column;gap:16px;">
                                 ${userInfos.map((u, idx) => {
@@ -885,9 +945,9 @@
                                     const color = funColors[idx % funColors.length];
                                     const emoji = progressEmojis[(percent >= 100 ? 0 : Math.floor(percent / 10)) % progressEmojis.length];
                                     let trophy = percent >= 100 ? '🏅' : '';
-                                    let badge = badges[idx] || '';
+                                    let badge = getPositionBadge(idx, userInfos.length);
                                     return `
-                                        <div style="background:#fff;border-radius:16px;padding:16px 18px;box-shadow:0 2px 10px rgba(0,0,0,0.06);position:relative;">
+                                        <div class="commander-card" data-rank="${idx + 1}" style="background:#fff;border-radius:16px;padding:16px 18px;box-shadow:0 2px 10px rgba(0,0,0,0.06);position:relative;">
                                             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
                                                 <span style="font-weight:600;color:#374151;display:flex;align-items:center;gap:6px;">
                                                     <span style="font-size:1.2em;">${emoji}</span> ${u.name} ${trophy} ${badge}
